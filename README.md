@@ -21,7 +21,7 @@ The code in this repository is licensed under MIT. See the LICENSE file for deta
 
    - Computes occultation events (ingress/egress) between TGO and Earth using SPICE.
    - Determines the latitude and longitude of tangent points where the signal path grazes Mars.
-   - Computes the corresponding solar zenith angles.
+   - Computes the corresponding solar zenith angles (SZA) and solar longitudes (Ls).
    - Outputs results in `Occultations_spice.txt`.
 
 2. `OPSWeb_requester.py`
@@ -40,35 +40,43 @@ The code in this repository is licensed under MIT. See the LICENSE file for deta
   - Compares SPICE-simulated occultations with covered ones from `opsweb_covered.txt`.
   - Plots only ingress/egress latitudes (as a function of time and SZA) where ground 
     station coverage exists.
+  - Plots covered ingress/ egress latitudes as a function of SZA colorcoeded by Ls. 
   - Also provides a full distribution of all occultation latitudes (2023–2024).
 
 ---
 
 ## Example Outputs
 
-- **[Latitude vs Time](Latitude_Time_step_1s.png)**  
-  All ingress and egress latitudes computed from 2020–2024.
+> **Note:** All simulations for the example outputs are conducted with **1 s** time steps.
+> Dates before **2023‑01‑01** have `mspa = NaN` (multiple‑spacecraft‑per‑aperture) and are therefore skipped, so coverage data is only available from the beginning of 2023 onward.  
+> Since `mspa` reflects cases where more than one spacecraft uses a ground station — allowing multiple downlinks but only one uplink — it is unknown whether TGO received an uplink before 2023.
 
-- **[Latitude vs Time (2023–2024)](Latitude_Time_step_1s_starting_2023.png)**  
-  Filtered to show only occultations from 2023–2024.
+- **[Latitude vs Time (2020–2024)](Latitude_Time.png)**  
+  Ingress & egress latitudes vs. time for 2020–2024.
 
-- **[Latitude vs Time (Covered)](Latitude_Time_step_1s_starting_2023_covered.png)**  
-  Occultation events with ground station tracking (from OBSWeb) in 2023–2024.
+- **[Latitude vs Time (2023–2024)](Latitude_Time_starting_2023.png)**  
+  Ingress & egress latitudes vs. time for 2023–2024.
 
-- **[Latitude vs SZA (2020–2024)](Latitude_SZA_step_1s.png)**  
-  Tangent-point latitude vs solar zenith angle (SZA) for all occultations.
+- **[Latitude vs Time (2023–2024, Covered)](Latitude_Time_starting_2023_covered.png)**  
+  Ingress & egress latitudes vs. time with ground‑station coverage for 2023–2024.
 
-- **[Latitude vs SZA (2023–2024)](Latitude_SZA_step_1s_starting_2023.png)**  
-  Subset showing events from 2023–2024 only.
+- **[Latitude vs SZA (2020–2024)](Latitude_SZA.png)**  
+  Ingress & egress latitudes vs. solar‑zenith angle for 2020–2024.
 
-- **[Latitude vs SZA (Covered)](Latitude_SZA_step_1s_starting_2023_covered.png)**  
-  SZA–latitude distribution of events with ground station coverage (2023–2024).
+- **[Latitude vs SZA (2023–2024)](Latitude_SZA_starting_2023.png)**  
+  Ingress & egress latitudes vs. solar‑zenith angle for 2023–2024.
+
+- **[Latitude vs SZA (2023–2024, Covered)](Latitude_SZA_starting_2023_covered.png)**  
+  Ingress & egress latitudes vs. solar‑zenith angle with ground‑station coverage for 2023–2024.
+
+- **[Latitude vs SZA (2023–2024, Covered), color‑coded by Ls](Latitude_SZA_starting_2023_covered_Ls.png)**  
+  Ingress & egress latitudes vs. solar‑zenith angle with ground‑station coverage, color‑coded by solar longitude for 2023–2024.
 
 ---
 
 ## How to Use
 
-1. Download and install the newest [SPICE kernels](https://naif.jpl.nasa.gov/naif/data.html) required for TGO and Mars.
+1. Download and install the newest [SPICE kernels](https://naif.jpl.nasa.gov/naif/data.html) required for TGO and Mars (ExoMars).
 
 2. Modify the `SPICE_METAKERNEL_PATH` in the scripts to point to your local `.tm` file.
 

@@ -1,11 +1,11 @@
 """
 Author: Michaela Benthaus
-Date: 03.06.2025
+Date: 02.07.2025
 
 Description:
     Computes occultation events (ingress and egress) for ExoMars TGO using SPICE,
     identifying when the impact parameter crosses the Mars radius.
-    Results include UTC time, latitude, longitude, and solar zenith angle (SZA).
+    Results include UTC time, latitude, longitude, solar zenith angle (SZA) and solar longitude (Ls).
     Computation is parallelized using multiple CPU cores to reduce runtime.
 """
 
@@ -25,7 +25,7 @@ SPICE_METAKERNEL_PATH = r'C:\Spice\exomars2016\kernels\mk\em16_ops.tm'
 class SpiceVariables:
     mars_id = 'MARS'
     frame = 'IAU_MARS'
-    tgo_id = '-143025'
+    tgo_hga_id = '-143025'  # High gain antenna 
     earth_id = '399'
 sv = SpiceVariables()
 
@@ -63,9 +63,9 @@ def compute_tangent_params(et, gs_id):
     Computation of impact parameters and tangent points.
     """
     try:
-        ray = spice.spkpos(gs_id, et, sv.frame, 'CN+S', sv.tgo_id)[0]
+        ray = spice.spkpos(gs_id, et, sv.frame, 'CN+S', sv.tgo_hga_id)[0]
         tanpt, *_ = spice.tangpt('ELLIPSOID', 'MARS', et, sv.frame, 'CN+S',
-                                 'TANGENT POINT', sv.tgo_id, sv.frame, ray)
+                                 'TANGENT POINT', sv.tgo_hga_id, sv.frame, ray)
         ip = np.linalg.norm(tanpt)
         sun_vec = spice.spkpos('SUN', et, sv.frame, 'NONE', sv.mars_id)[0]
         sza = np.rad2deg(spice.vsep(sun_vec, tanpt))
@@ -108,12 +108,13 @@ def find_occultations_parallel(gs_id, start_et, end_et, step, n_procs=4):
             t_et = et_vals[idx]
             _, lon, lat = spice.reclat(tanpts[idx])
             sza = szas[idx]
-            out.append((t_et, np.degrees(lon), np.degrees(lat), sza))
+            ls_deg = np.degrees(spice.lspcn('MARS', t_et, 'LT+S')) % 360  # Solar longitude in deg
+            out.append((t_et, np.degrees(lon), np.degrees(lat), sza, ls_deg))
 
-    df_ing = pd.DataFrame(ingress, columns=['ET', 'Longitude (deg)', 'Latitude (deg)', 'SZA (deg)'])
+    df_ing = pd.DataFrame(ingress, columns=['ET', 'Longitude (deg)', 'Latitude (deg)', 'SZA (deg)', 'Ingress Ls (deg)'])
     df_ing['Ingress UTC'] = spice.et2utc(df_ing['ET'].tolist(), 'ISOC', 3)
 
-    df_egr = pd.DataFrame(egress, columns=['ET', 'Longitude (deg)', 'Latitude (deg)', 'SZA (deg)'])
+    df_egr = pd.DataFrame(egress, columns=['ET', 'Longitude (deg)', 'Latitude (deg)', 'SZA (deg)', 'Egress Ls (deg)'])
     df_egr['Egress UTC'] = spice.et2utc(df_egr['ET'].tolist(), 'ISOC', 3)
 
     return df_ing, df_egr
@@ -129,11 +130,11 @@ if __name__ == '__main__':
 
 
   # ------------------- Format Output -------------------
-    ing = df_ingress[['Ingress UTC', 'Latitude (deg)', 'Longitude (deg)', 'SZA (deg)']].reset_index(drop=True)
-    eg = df_egress[['Egress UTC', 'Latitude (deg)', 'Longitude (deg)', 'SZA (deg)']].reset_index(drop=True)
+    ing = df_ingress[['Ingress UTC', 'Latitude (deg)', 'Longitude (deg)', 'SZA (deg)', 'Ingress Ls (deg)']].reset_index(drop=True)
+    eg = df_egress[['Egress UTC', 'Latitude (deg)', 'Longitude (deg)', 'SZA (deg)', 'Egress Ls (deg)']].reset_index(drop=True)
 
-    ing.columns = ['Ingress UTC', 'Ingress Lat (deg)', 'Longitude (deg)', 'Ingress SZA (deg)']
-    eg.columns  = ['Egress UTC',  'Egress Lat (deg)', 'Longitude (deg)', 'Egress SZA (deg)']
+    ing.columns = ['Ingress UTC', 'Ingress Lat (deg)', 'Longitude (deg)', 'Ingress SZA (deg)', 'Ingress Ls (deg)']
+    eg.columns  = ['Egress UTC',  'Egress Lat (deg)', 'Longitude (deg)', 'Egress SZA (deg)', 'Egress Ls (deg)']
 
     df_wide = pd.concat([ing, eg], axis=1)
 

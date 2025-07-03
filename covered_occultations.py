@@ -1,6 +1,6 @@
 '''
 Author: Michaela Benthaus 
-Date: 25.05.2025
+Date: 02.07.2025
 
 Script to compare ground-station-covered occultation times (from OBSWeb) with simulated
 occultation events computed using SPICE. It extracts and plots only the ingress and egress 
@@ -229,6 +229,62 @@ plt.legend(loc='upper right', bbox_to_anchor=(1, 1))
 plt.xlim(
     min(df_spice['Ingress SZA (deg)'].min(), df_spice['Egress SZA (deg)'].min()),
     max(df_spice['Ingress SZA (deg)'].max(), df_spice['Egress SZA (deg)'].max())
+)
+plt.ylim(-90, 90)
+plt.tight_layout()
+plt.show()
+
+
+
+# Latitude vs SZA with Ls colorcode:
+
+n_ingress = len(spice_covered['Ingress SZA (deg)'])
+n_egress  = len(spice_covered['Egress SZA (deg)'])
+label_ing = f'Ingress Points \n (N={n_ingress})'
+label_egr = f'Egress Points \n (N={n_egress})'
+ingress_ls = spice_covered['Ingress Ls (deg)']
+egress_ls  = spice_covered['Egress Ls (deg)']
+
+plt.figure(figsize=(10, 6))
+# Ingress:
+sc1 = plt.scatter(
+    spice_covered['Ingress SZA (deg)'],
+    spice_covered['Ingress Lat (deg)'],
+    c=ingress_ls,
+    cmap='twilight_shifted',  # twilight shifted colormap
+    s=55,
+    alpha=0.8,
+    label=label_ing,
+    marker='+',               
+    linewidths=1.5            
+)
+# Egress:
+sc2 = plt.scatter(
+    spice_covered['Egress SZA (deg)'],
+    spice_covered['Egress Lat (deg)'],
+    c=egress_ls,
+    cmap='twilight_shifted',
+    s=20,
+    alpha=0.8,
+    label=label_egr,
+    marker='^',               
+    linewidths=1.5,           
+)
+
+plt.xlabel('Solar Zenith Angle [deg]', size=13)
+plt.ylabel('Mars latitude [deg]', size=13)
+plt.title(
+    'Latitude vs Solar Zenith Angle at TGO–Earth Occultation Tangent Points\n'
+    'Covered by Ground Stations',
+    size=15
+)
+plt.grid(color="gray", linestyle="dotted", linewidth=0.5)
+cbar = plt.colorbar(sc1, pad=0.02)
+cbar.set_label('Solar Longitude [deg]', size=13)
+plt.legend(loc='upper right', bbox_to_anchor=(1, 1))
+plt.xlim(
+    min(spice_covered['Ingress SZA (deg)'].min(), spice_covered['Egress SZA (deg)'].min()),
+    max(spice_covered['Ingress SZA (deg)'].max(), spice_covered['Egress SZA (deg)'].max())
 )
 plt.ylim(-90, 90)
 plt.tight_layout()
