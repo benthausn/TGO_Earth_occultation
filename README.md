@@ -85,6 +85,8 @@ The code in this repository is licensed under MIT. See the LICENSE file for deta
 4. Run `OPSWeb_requester.py` to fetch ground station tracking times from OPSWeb and generate output files.
 
 5. Run `covered_occultations.py` to filter occultation events by actual coverage and generate plots.
+   
+---
 
-
-
+## Poster EPSC:
+**[Poster](Poster_EPSC_Michaela_Benthaus.pdf)**
